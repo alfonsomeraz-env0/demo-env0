@@ -27,7 +27,8 @@ data "aws_ami" "amazon_linux" {
 }
 
 locals {
-  root_volume_size = max(var.root_volume_size, data.aws_ami.amazon_linux.block_device_mappings[0].ebs.volume_size)
+  ami_root_size    = [for bdm in data.aws_ami.amazon_linux.block_device_mappings : bdm.ebs.volume_size if bdm.device_name == data.aws_ami.amazon_linux.root_device_name][0]
+  root_volume_size = max(var.root_volume_size, local.ami_root_size)
 }
 
 resource "aws_instance" "this" {
