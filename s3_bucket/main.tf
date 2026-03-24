@@ -17,7 +17,6 @@ resource "aws_s3_bucket" "this" {
   tags = {
     Name        = var.bucket_name
     Environment = var.environment
-    test-tag = "I am testing env zero for PR change on VCS"
   }
 }
 
