@@ -1,24 +1,37 @@
 version: 2
 deploy:
   steps:
-    terraformInit:
+    terraformPlan:
       before:
-        - name: "Run TFLint Scan"
+        - name: "Run TFLint Security Scan"
           run: |
             #!/bin/bash
             set -e
             
-            # Install TFLint
-            curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+            # Create local bin directory
+            mkdir -p $HOME/.local/bin
+            export PATH=$HOME/.local/bin:$PATH
             
-            # Run TFLint scan
+            # Download TFLint directly without installer
+            TFLINT_VERSION=$(curl -s https://api.github.com/repos/terraform-linters/tflint/releases/latest | grep tag_name | cut -d '"' -f 4)
+            wget -O /tmp/tflint.zip https://github.com/terraform-linters/tflint/releases/download/${TFLINT_VERSION}/tflint_linux_amd64.zip
+            unzip -o /tmp/tflint.zip -d $HOME/.local/bin/
+            chmod +x $HOME/.local/bin/tflint
+            
+            # Verify installation
+            tflint --version
+            
+            # Initialize and run TFLint
             tflint --init
-            tflint --format json > tflint-results.json
+            tflint --format json > tflint-results.json || true
             
             # Check for violations
-            if [ $(jq '.issues | length' tflint-results.json) -gt 0 ]; then
+            ISSUE_COUNT=$(jq '.issues | length' tflint-results.json)
+            
+            if [ "$ISSUE_COUNT" -gt 0 ]; then
               echo "❌ TFLint violations detected!"
               jq '.issues' tflint-results.json
               exit 1
             fi
+            
             echo "✅ TFLint scan passed!"
