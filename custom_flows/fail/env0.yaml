@@ -1,0 +1,19 @@
+version: 2
+deploy:
+  before:
+    - name: "Run TFLint Scan"
+      run: |
+        # Install TFLint
+        curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+        
+        # Run TFLint scan
+        tflint --init
+        tflint --format json > tflint-results.json
+        
+        # Check for violations and fail if found
+        if [ $(jq '.issues | length' tflint-results.json) -gt 0 ]; then
+          echo "TFLint violations detected!"
+          jq '.issues' tflint-results.json
+          exit 1  # This will fail the deployment
+        fi
+        echo "TFLint scan passed!"
