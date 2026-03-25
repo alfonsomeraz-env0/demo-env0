@@ -8,18 +8,36 @@ deploy:
             #!/bin/bash
             set -e
             
+            echo "🔧 Installing TFLint..."
+            
             # Create local bin directory
             mkdir -p $HOME/.local/bin
             export PATH=$HOME/.local/bin:$PATH
             
-            # Download TFLint directly without installer
-            TFLINT_VERSION=$(curl -s https://api.github.com/repos/terraform-linters/tflint/releases/latest | grep tag_name | cut -d '"' -f 4)
-            wget -O /tmp/tflint.zip https://github.com/terraform-linters/tflint/releases/download/${TFLINT_VERSION}/tflint_linux_amd64.zip
+            # Get the latest version more reliably
+            TFLINT_VERSION=$(curl -s https://api.github.com/repos/terraform-linters/tflint/releases/latest | jq -r '.tag_name')
+            
+            # Verify we got a version
+            if [ -z "$TFLINT_VERSION" ] || [ "$TFLINT_VERSION" == "null" ]; then
+              echo "❌ Failed to fetch TFLint version"
+              exit 1
+            fi
+            
+            echo "📦 Downloading TFLint version: $TFLINT_VERSION"
+            
+            # Download TFLint
+            curl -L -o /tmp/tflint.zip \
+              "https://github.com/terraform-linters/tflint/releases/download/${TFLINT_VERSION}/tflint_linux_amd64.zip"
+            
+            # Extract and install
             unzip -o /tmp/tflint.zip -d $HOME/.local/bin/
             chmod +x $HOME/.local/bin/tflint
             
             # Verify installation
+            echo "✅ TFLint installed successfully"
             tflint --version
+            
+            echo "🔍 Running TFLint scan..."
             
             # Initialize and run TFLint
             tflint --init
@@ -29,9 +47,9 @@ deploy:
             ISSUE_COUNT=$(jq '.issues | length' tflint-results.json)
             
             if [ "$ISSUE_COUNT" -gt 0 ]; then
-              echo "❌ TFLint violations detected!"
-              jq '.issues' tflint-results.json
+              echo "❌ TFLint found $ISSUE_COUNT violation(s)!"
+              jq -r '.issues[] | "  [\(.severity)] \(.rule.name): \(.message)"' tflint-results.json
               exit 1
             fi
             
-            echo "✅ TFLint scan passed!"
+            echo "✅ TFLint scan passed - no issues found!"
