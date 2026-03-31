@@ -1,100 +1,43 @@
-name: Complete Stack Deployment
-description: Deploy full infrastructure stack (VPC, Security Groups, S3, EC2) with dependency management
-version: "1.0"
+environments:
+  vpc:
+    name: "VPC and Network"
+    templateName: "VPC"
 
-parameters:
-  environment:
-    type: string
-    default: dev
-    description: "Target environment (dev, staging, prod)"
+  db:
+    name: "Database"
+    templateName: "DB"
+    requiresApproval: true
+    needs:
+      - vpc
 
-  auto_approve:
-    type: boolean
-    default: false
-    description: "Automatically approve Terraform changes"
+  eks:
+    name: "EKS Cluster"
+    templateName: "EKS"
+    needs:
+      - vpc
 
-stages:
-  - name: Foundation
-    description: "Deploy foundational network infrastructure"
-    steps:
-      - name: Plan VPC and Security Groups
-        type: terraform
-        action: plan
-        working_directory: terraform
-        targets:
-          - module.vpc
-          - module.security_groups
-        output_file: foundation-plan.tfplan
+  billing-service:
+    name: "Billing Service"
+    vcs:
+      type: terraform
+      terraformVersion: "1.5.7"
+      repository: "https://github.com/env0/templates"
+      path: "aws/hello-world"
+      githubInstallationId: 123456789
+    disabled: ${DISABLE_BILLING_SERVICE}
+    needs:
+      - db
+      - eks
 
-  - name: Storage
-    description: "Deploy S3 storage with lifecycle policies"
-    depends_on: [Foundation]
-    steps:
-      - name: Plan S3 Bucket
-        type: terraform
-        action: plan
-        working_directory: terraform
-        targets:
-          - module.s3
-        output_file: storage-plan.tfplan
+  config-service:
+    name: "Configuration Service"
+    templateName: "Configuration Service"
+    revision: feature-branch
+    disabled: ${DISABLE_CONFIG_SERVICE}
+    needs:
+      - db
+      - eks
 
-  - name: Compute
-    description: "Deploy EC2 instance and IAM roles"
-    depends_on: [Foundation, Storage]
-    steps:
-      - name: Plan IAM and EC2
-        type: terraform
-        action: plan
-        working_directory: terraform
-        targets:
-          - module.iam
-          - module.ec2
-        output_file: compute-plan.tfplan
+settings:
+  environmentRemovalStrategy: destroy
 
-  - name: Apply
-    description: "Apply all infrastructure changes"
-    depends_on: [Foundation, Storage, Compute]
-    steps:
-      - name: Apply Foundation
-        type: terraform
-        action: apply
-        working_directory: terraform
-        targets:
-          - module.vpc
-          - module.security_groups
-        auto_approve: ${{ parameters.auto_approve }}
-
-      - name: Apply Storage
-        type: terraform
-        action: apply
-        working_directory: terraform
-        targets:
-          - module.s3
-        auto_approve: ${{ parameters.auto_approve }}
-
-      - name: Apply Compute
-        type: terraform
-        action: apply
-        working_directory: terraform
-        targets:
-          - module.iam
-          - module.ec2
-        auto_approve: ${{ parameters.auto_approve }}
-
-outputs:
-  vpc_id:
-    description: "VPC ID"
-    value: "module.vpc.vpc_id"
-  ec2_public_ip:
-    description: "Public IP of EC2 instance"
-    value: "module.ec2.public_ip"
-  s3_bucket_name:
-    description: "S3 bucket name"
-    value: "module.s3.bucket_id"
-
-notifications:
-  - type: email
-    on: [success, failure]
-  - type: slack
-    on: [success, failure]
-    channel: "#deployments"
