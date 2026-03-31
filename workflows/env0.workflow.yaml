@@ -1,42 +1,27 @@
 environments:
   vpc:
     name: "VPC and Network"
-    templateName: "VPC"
+    templateName: "vpc"
 
   db:
     name: "Database"
-    templateName: "DB"
+    templateName: "s3_bucket"
     requiresApproval: true
     needs:
       - vpc
 
-  eks:
-    name: "EKS Cluster"
-    templateName: "EKS"
+  sg:
+    name: "Security Group"
+    templateName: "security_group"
     needs:
       - vpc
 
-  billing-service:
-    name: "Billing Service"
-    vcs:
-      type: terraform
-      terraformVersion: "1.5.7"
-      repository: "https://github.com/env0/templates"
-      path: "aws/hello-world"
-      githubInstallationId: 123456789
-    disabled: ${DISABLE_BILLING_SERVICE}
+  ec2:
+    name: "EC2"
+    templateName: "ec2"
     needs:
       - db
-      - eks
-
-  config-service:
-    name: "Configuration Service"
-    templateName: "Configuration Service"
-    revision: feature-branch
-    disabled: ${DISABLE_CONFIG_SERVICE}
-    needs:
-      - db
-      - eks
+      - sg
 
 settings:
   environmentRemovalStrategy: destroy
