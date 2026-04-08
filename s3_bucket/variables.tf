@@ -14,7 +14,3 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
-
-variable "replica_region" {
-  type = string
-}
