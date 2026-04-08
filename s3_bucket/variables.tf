@@ -15,10 +15,6 @@ variable "environment" {
   default     = "dev"
 }
 
-variable "aws_region" {
-  type = string
-}
-
 variable "replica_region" {
   type = string
 }
