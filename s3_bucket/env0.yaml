@@ -2,12 +2,11 @@ version: 2
 
 deploy:
   steps:
-    setup:
+    setupVariables:
       after:
         - name: Print custom message
           run: |
-            echo "Starting env0 deployment"
-            echo "This is a custom script running in env0"
-            echo "Environment: $ENV0_ENVIRONMENT_NAME"
-            echo "Deployment ID: $ENV0_DEPLOYMENT_ID"
-            echo "Done"
+            echo "Hello from env0"
+            echo "Environment ID: $ENV0_ENVIRONMENT_ID"
+            echo "Project Name: $ENV0_PROJECT_NAME"
+            echo "Deployment Log ID: $ENV0_DEPLOYMENT_LOG_ID"
