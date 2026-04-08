@@ -1,12 +1,13 @@
-version: 1
+version: 2
 
 deploy:
   steps:
-    - name: Print custom message
-      run: |
-        echo "🚀 Starting env0 deployment..."
-        echo "This is a custom script running inside env0."
-        echo "Environment: $ENV0_ENVIRONMENT_NAME"
-        echo "User: $ENV0_USER_NAME"
-        echo "Deployment ID: $ENV0_DEPLOYMENT_ID"
-        echo "✅ Script completed successfully."
+    setup:
+      after:
+        - name: Print custom message
+          run: |
+            echo "Starting env0 deployment"
+            echo "This is a custom script running in env0"
+            echo "Environment: $ENV0_ENVIRONMENT_NAME"
+            echo "Deployment ID: $ENV0_DEPLOYMENT_ID"
+            echo "Done"
