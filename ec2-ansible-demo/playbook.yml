@@ -46,5 +46,4 @@
         </body>
         </html>
         EOF
-      async: 300
-      poll: 10
+      changed_when: false
