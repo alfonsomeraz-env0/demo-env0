@@ -2,23 +2,26 @@
 - name: Configure EC2 Instance with Web Server
   hosts: all
   become: yes
-  gather_facts: no  # Disable facts gathering initially
+  gather_facts: no
   vars:
-    ansible_python_interpreter: /usr/bin/python3
+    ansible_python_interpreter: auto_silent
   
   tasks:
-    - name: Wait for instance to be fully ready
-      wait_for_connection:
-        timeout: 120
+    - name: Wait a moment for system to be ready
+      pause:
+        seconds: 10
     
-    - name: Install Python 3 if needed
-      raw: |
-        if ! command -v python3 &> /dev/null; then
-          apt-get update && apt-get install -y python3 python3-apt
-        fi
+    - name: Test raw connection
+      raw: echo "Connection successful"
       changed_when: false
     
-    - name: Gather facts now that Python is ready
+    - name: Ensure Python 3 is installed
+      raw: |
+        apt-get update -qq
+        apt-get install -y python3 python3-apt
+      changed_when: false
+    
+    - name: Now gather facts with Python available
       setup:
     
     - name: Update package cache (Ubuntu)
