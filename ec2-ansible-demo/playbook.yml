@@ -21,19 +21,14 @@
         apt-get install -y python3 python3-apt
       changed_when: false
     
-    - name: Now gather facts with Python available
-      setup:
-    
     - name: Update package cache (Ubuntu)
       apt:
         update_cache: yes
-      when: ansible_os_family == "Debian"
 
     - name: Install Apache web server (Ubuntu)
       apt:
         name: apache2
         state: present
-      when: ansible_os_family == "Debian"
 
     - name: Start and enable Apache
       service:
@@ -75,9 +70,7 @@
               <h1>🎉 Success!</h1>
               <p>This EC2 instance was provisioned by <strong>env0</strong></p>
               <p>and configured with <strong>Ansible</strong>!</p>
-              <hr style="border: 1px solid white; width: 50%;">
-              <p><strong>Hostname:</strong> {{ ansible_hostname }}</p>
-              <p><strong>IP Address:</strong> {{ ansible_default_ipv4.address }}</p>
+              <p>Hostname: {{ inventory_hostname }}</p>
             </div>
           </body>
           </html>
