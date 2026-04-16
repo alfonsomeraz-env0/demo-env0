@@ -7,10 +7,11 @@ deploy:
         - name: Setup SSH Key
           run: |
             mkdir -p /tmp
-            echo "$SSH_PRIVATE_KEY" | base64 -d > /tmp/demo-key.pem
+            echo "$SSH_PRIVATE_KEY" | tr ';' '\n' | tr -d "\r" > /tmp/demo-key.pem
             chmod 600 /tmp/demo-key.pem
-            echo "SSH key created with permissions:"
-            ls -la /tmp/demo-key.pem
+            echo "Verifying SSH key format:"
+            head -1 /tmp/demo-key.pem
+            tail -1 /tmp/demo-key.pem
         
         - name: Install Ansible
           run: |
