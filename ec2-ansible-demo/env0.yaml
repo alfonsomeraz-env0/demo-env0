@@ -4,6 +4,12 @@ deploy:
   steps:
     terraformInit:
       before:
+        - name: Setup SSH Key
+          run: |
+            echo "$SSH_PRIVATE_KEY" > /tmp/demo-key.pem
+            chmod 600 /tmp/demo-key.pem
+            ls -la /tmp/demo-key.pem
+        
         - name: Install Ansible
           run: |
             if ! command -v ansible &> /dev/null; then
@@ -26,37 +32,43 @@ deploy:
         
         - name: Wait for SSH
           run: |
+            export ANSIBLE_HOST_KEY_CHECKING=False
             EC2_IP=$(cat instance_ip.txt)
             echo "Waiting for SSH on $EC2_IP..."
             for i in {1..30}; do
-              if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i $SSH_KEY_PATH ec2-user@$EC2_IP "echo 'SSH Ready'" 2>/dev/null; then
+              if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i /tmp/demo-key.pem ec2-user@$EC2_IP "echo 'SSH Ready'" 2>/dev/null; then
                 echo "SSH is ready!"
                 break
               fi
-              echo "Attempt $i: SSH not ready yet, waiting..."
+              echo "Attempt $i: SSH not ready yet..."
               sleep 10
             done
         
-        - name: Run Ansible
+        - name: Run Ansible Playbook
           run: |
             export ANSIBLE_HOST_KEY_CHECKING=False
             EC2_IP=$(cat instance_ip.txt)
             echo "Running Ansible playbook against $EC2_IP..."
             ansible-playbook -i "${EC2_IP}," \
               -u ec2-user \
-              --private-key=$SSH_KEY_PATH \
+              --private-key=/tmp/demo-key.pem \
               playbook.yml
         
-        - name: Verify Deployment
+        - name: Display Results
           run: |
             EC2_IP=$(cat instance_ip.txt)
+            echo "=========================================="
             echo "🎉 Deployment Complete!"
+            echo "=========================================="
             echo "Instance IP: $EC2_IP"
             echo "Web Server: http://$EC2_IP"
+            echo "=========================================="
+            sleep 10
+            curl -s http://$EC2_IP || echo "Web server starting up..."
 
 destroy:
   steps:
     terraformDestroy:
       before:
-        - name: Cleanup
+        - name: Cleanup Message
           run: echo "Destroying infrastructure..."
