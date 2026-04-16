@@ -1,15 +1,47 @@
-- name: Post-provisioning setup
-  hosts: "{{ target_host }}"
+---
+- name: Configure EC2 Instance
+  hosts: all
   become: yes
+  gather_facts: yes
+  
   tasks:
-    - name: Install nginx
-      ansible.builtin.package:
-        name: nginx
-        state: present
+    - name: Update package cache
+      yum:
+        update_cache: yes
+      when: ansible_os_family == "RedHat"
 
-    - name: Start nginx
-      ansible.builtin.service:
-        name: nginx
+    - name: Install Apache web server
+      yum:
+        name: httpd
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Start and enable Apache
+      service:
+        name: httpd
         state: started
         enabled: yes
-        
+
+    - name: Create custom index.html
+      copy:
+        content: |
+          <html>
+          <head><title>env0 Demo</title></head>
+          <body>
+            <h1>Success! 🎉</h1>
+            <p>This EC2 instance was provisioned by env0 and configured with Ansible!</p>
+            <p>Hostname: {{ ansible_hostname }}</p>
+            <p>IP Address: {{ ansible_default_ipv4.address }}</p>
+          </body>
+          </html>
+        dest: /var/www/html/index.html
+        mode: '0644'
+
+    - name: Ensure firewall allows HTTP
+      firewalld:
+        service: http
+        permanent: yes
+        state: enabled
+        immediate: yes
+      when: ansible_os_family == "RedHat"
+      ignore_errors: yes

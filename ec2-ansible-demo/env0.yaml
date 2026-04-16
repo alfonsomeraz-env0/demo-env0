@@ -1,0 +1,61 @@
+version: 1
+
+deploy:
+  steps:
+    - name: Install Ansible
+      run: |
+        if ! command -v ansible &> /dev/null; then
+          echo "Installing Ansible..."
+          pip3 install ansible
+        fi
+    
+    - name: Deploy EC2 Instance
+      run: terraform init && terraform apply -auto-approve
+    
+    - name: Wait for Instance to be Ready
+      run: |
+        echo "Waiting for EC2 instance to be ready..."
+        sleep 30
+    
+    - name: Get EC2 IP Address
+      run: |
+        EC2_IP=$(terraform output -raw instance_public_ip)
+        echo "EC2 Instance IP: $EC2_IP"
+        echo "$EC2_IP" > instance_ip.txt
+    
+    - name: Wait for SSH to be Available
+      run: |
+        EC2_IP=$(cat instance_ip.txt)
+        echo "Waiting for SSH on $EC2_IP..."
+        for i in {1..30}; do
+          if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i $SSH_KEY_PATH ec2-user@$EC2_IP "echo 'SSH Ready'" 2>/dev/null; then
+            echo "SSH is ready!"
+            break
+          fi
+          echo "Attempt $i: SSH not ready yet, waiting..."
+          sleep 10
+        done
+    
+    - name: Run Ansible Playbook
+      run: |
+        EC2_IP=$(cat instance_ip.txt)
+        echo "Running Ansible playbook against $EC2_IP..."
+        ansible-playbook -i "${EC2_IP}," \
+          -u ec2-user \
+          --private-key=$SSH_KEY_PATH \
+          playbook.yml
+    
+    - name: Verify Deployment
+      run: |
+        EC2_IP=$(cat instance_ip.txt)
+        echo "🎉 Deployment Complete!"
+        echo "Instance IP: $EC2_IP"
+        echo "Web Server: http://$EC2_IP"
+        echo ""
+        echo "Testing web server..."
+        curl -s http://$EC2_IP || echo "Web server not responding yet, may need a few more seconds"
+
+destroy:
+  steps:
+    - name: Destroy Infrastructure
+      run: terraform destroy -auto-approve

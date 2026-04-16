@@ -1,29 +1,70 @@
-provider "aws" {
-  region = "us-east-1"
-}
-
-resource "aws_instance" "demo" {
-  ami           = "ami-0c55b159cbfafe1f0"
-  instance_type = "t3.micro"
-
-  key_name = var.key_name
-
-  tags = {
-    Name = "env0-demo"
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
   }
 }
 
-resource "null_resource" "trigger_ansible" {
-  depends_on = [aws_instance.demo]
+provider "aws" {
+  region = var.aws_region
+}
 
-  provisioner "local-exec" {
-    command = <<EOT
-      curl -s \
-        -H "Authorization: Bearer ${var.semaphore_token}" \
-        -H "Content-Type: application/json" \
-        -X POST \
-        -d '{"template_id": ${var.semaphore_template_id}, "environment": "{\"target_host\": \"${aws_instance.demo.public_ip}\"}" }' \
-        "${var.semaphore_url}/api/project/${var.semaphore_project_id}/tasks"
-    EOT
+# Get default VPC
+data "aws_vpc" "default" {
+  default = true
+}
+
+# Get default subnet
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
+
+# Security group to allow SSH and HTTP
+resource "aws_security_group" "demo_sg" {
+  name_prefix = "env0-demo-"
+  vpc_id      = data.aws_vpc.default.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "env0-demo-sg"
+  }
+}
+
+# EC2 Instance
+resource "aws_instance" "demo" {
+  ami           = var.ami_id
+  instance_type = var.instance_type
+  key_name      = var.key_name
+  
+  vpc_security_group_ids = [aws_security_group.demo_sg.id]
+  subnet_id              = data.aws_subnets.default.ids[0]
+
+  tags = {
+    Name = "env0-demo-instance"
   }
 }
