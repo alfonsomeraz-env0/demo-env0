@@ -1,5 +1,5 @@
 ---
-- name: Configure EC2 Instance
+- name: Configure EC2 Instance with Web Server
   hosts: all
   become: yes
   gather_facts: yes
@@ -25,13 +25,41 @@
     - name: Create custom index.html
       copy:
         content: |
+          <!DOCTYPE html>
           <html>
-          <head><title>env0 Demo</title></head>
+          <head>
+            <title>env0 Demo Success</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+              }
+              .container {
+                text-align: center;
+                background: rgba(255,255,255,0.1);
+                padding: 50px;
+                border-radius: 20px;
+                backdrop-filter: blur(10px);
+              }
+              h1 { font-size: 3em; margin: 0; }
+              p { font-size: 1.2em; }
+            </style>
+          </head>
           <body>
-            <h1>Success! 🎉</h1>
-            <p>This EC2 instance was provisioned by env0 and configured with Ansible!</p>
-            <p>Hostname: {{ ansible_hostname }}</p>
-            <p>IP Address: {{ ansible_default_ipv4.address }}</p>
+            <div class="container">
+              <h1>🎉 Success!</h1>
+              <p>This EC2 instance was provisioned by <strong>env0</strong></p>
+              <p>and configured with <strong>Ansible</strong>!</p>
+              <hr style="border: 1px solid white; width: 50%;">
+              <p><strong>Hostname:</strong> {{ ansible_hostname }}</p>
+              <p><strong>IP Address:</strong> {{ ansible_default_ipv4.address }}</p>
+            </div>
           </body>
           </html>
         dest: /var/www/html/index.html
