@@ -1,11 +1,11 @@
 variable "aws_region" {
   description = "AWS region"
-  default     = "us-east-1"
+  default     = "us-east-2"
 }
 
 variable "ami_id" {
   description = "AMI ID for EC2 instance"
-  default     = "ami-0c55b159cbfafe1f0"  # Amazon Linux 2
+  default     = "ami-0ea3c35c5c3284d82"  # Ubuntu 22.04 LTS in us-east-2
 }
 
 variable "instance_type" {
