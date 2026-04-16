@@ -6,12 +6,15 @@ deploy:
       before:
         - name: Setup SSH Key
           run: |
-            mkdir -p /tmp
-            echo "$SSH_PRIVATE_KEY" | tr ';' '\n' | tr -d "\r" > /tmp/demo-key.pem
-            chmod 600 /tmp/demo-key.pem
-            echo "Verifying SSH key format:"
-            head -1 /tmp/demo-key.pem
-            tail -1 /tmp/demo-key.pem
+            mkdir -p ~/.ssh
+            echo "$SSH_PRIVATE_KEY" | tr ';' '\n' | tr -d "\r" > ~/.ssh/private_key.pem
+            chmod 600 ~/.ssh/private_key.pem
+            echo "SSH key created with permissions:"
+            ls -la ~/.ssh/private_key.pem
+            echo "First line of key:"
+            head -1 ~/.ssh/private_key.pem
+            echo "Last line of key:"
+            tail -1 ~/.ssh/private_key.pem
         
         - name: Install Ansible
           run: |
@@ -39,7 +42,7 @@ deploy:
             EC2_IP=$(cat instance_ip.txt)
             echo "Waiting for SSH on $EC2_IP..."
             for i in {1..30}; do
-              if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i /tmp/demo-key.pem ec2-user@$EC2_IP "echo 'SSH Ready'" 2>/dev/null; then
+              if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 -i ~/.ssh/private_key.pem ec2-user@$EC2_IP "echo 'SSH Ready'" 2>/dev/null; then
                 echo "SSH is ready!"
                 break
               fi
@@ -54,7 +57,7 @@ deploy:
             echo "Running Ansible playbook against $EC2_IP..."
             ansible-playbook -i "${EC2_IP}," \
               -u ec2-user \
-              --private-key=/tmp/demo-key.pem \
+              --private-key=~/.ssh/private_key.pem \
               playbook.yml
         
         - name: Display Results
