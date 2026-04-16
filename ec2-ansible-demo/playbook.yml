@@ -5,20 +5,20 @@
   gather_facts: yes
   
   tasks:
-    - name: Update package cache
-      yum:
+    - name: Update package cache (Ubuntu)
+      apt:
         update_cache: yes
-      when: ansible_os_family == "RedHat"
+      when: ansible_os_family == "Debian"
 
-    - name: Install Apache web server
-      yum:
-        name: httpd
+    - name: Install Apache web server (Ubuntu)
+      apt:
+        name: apache2
         state: present
-      when: ansible_os_family == "RedHat"
+      when: ansible_os_family == "Debian"
 
     - name: Start and enable Apache
       service:
-        name: httpd
+        name: apache2
         state: started
         enabled: yes
 
@@ -65,11 +65,15 @@
         dest: /var/www/html/index.html
         mode: '0644'
 
-    - name: Ensure firewall allows HTTP
-      firewalld:
-        service: http
-        permanent: yes
-        state: enabled
-        immediate: yes
-      when: ansible_os_family == "RedHat"
-      ignore_errors: yes
+    - name: Ensure Apache is configured correctly
+      lineinfile:
+        path: /etc/apache2/apache2.conf
+        regexp: '^ServerName'
+        line: 'ServerName localhost'
+      notify: restart apache2
+
+  handlers:
+    - name: restart apache2
+      service:
+        name: apache2
+        state: restarted
