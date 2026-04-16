@@ -5,24 +5,12 @@
   gather_facts: no
   
   tasks:
-    - name: Wait a moment for system to be ready
-      pause:
-        seconds: 10
-    
-    - name: Test raw connection
-      raw: echo "Connection successful"
-      changed_when: false
-    
-    - name: Update package cache and install Apache
+    - name: Install and configure Apache in one step
       raw: |
-        apt-get update -qq
-        apt-get install -y apache2
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update -qq && apt-get install -y apache2
         systemctl start apache2
         systemctl enable apache2
-      changed_when: false
-    
-    - name: Create custom index.html
-      raw: |
         cat > /var/www/html/index.html <<'EOF'
         <!DOCTYPE html>
         <html>
@@ -44,7 +32,6 @@
               background: rgba(255,255,255,0.1);
               padding: 50px;
               border-radius: 20px;
-              backdrop-filter: blur(10px);
             }
             h1 { font-size: 3em; margin: 0; }
             p { font-size: 1.2em; }
@@ -53,18 +40,11 @@
         <body>
           <div class="container">
             <h1>🎉 Success!</h1>
-            <p>This EC2 instance was provisioned by <strong>env0</strong></p>
-            <p>and configured with <strong>Ansible</strong>!</p>
+            <p>EC2 provisioned by <strong>env0</strong></p>
+            <p>Configured with <strong>Ansible</strong></p>
           </div>
         </body>
         </html>
         EOF
-      changed_when: false
-    
-    - name: Configure Apache ServerName
-      raw: |
-        if ! grep -q "^ServerName" /etc/apache2/apache2.conf; then
-          echo "ServerName localhost" >> /etc/apache2/apache2.conf
-        fi
-        systemctl restart apache2
-      changed_when: false
+      async: 300
+      poll: 10
