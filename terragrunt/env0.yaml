@@ -12,10 +12,12 @@ deploy:
 
     terraformApply:
       before:
-        - name: Remove stale plan files
+        - name: Apply in dependency order with real outputs
           run: |
-            find . -name ".tf-plan" -delete
-            echo "Plan files removed — modules will re-plan with real dependency outputs"
+            terragrunt run-all apply -auto-approve --terragrunt-non-interactive
+        - name: Regenerate plan files to reflect applied state
+          run: |
+            terragrunt run-all plan -out=.tf-plan --terragrunt-non-interactive
 
 destroy:
   steps:
