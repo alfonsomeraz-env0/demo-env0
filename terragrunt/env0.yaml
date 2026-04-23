@@ -2,7 +2,7 @@ version: 2
 
 deploy:
   steps:
-    terragruntInit:
+    terraformInit:
       after:
         - name: Verify modules
           run: |
@@ -10,7 +10,7 @@ deploy:
             echo "Environment: $ENV0_ENVIRONMENT_NAME"
             echo "Region: us-east-2"
 
-    terragruntApply:
+    terraformApply:
       after:
         - name: Summary
           run: |
@@ -18,7 +18,7 @@ deploy:
 
 destroy:
   steps:
-    terragruntDestroy:
+    terraformDestroy:
       before:
         - name: Pre-destroy notice
           run: echo "Destroying all modules in dependency order..."
