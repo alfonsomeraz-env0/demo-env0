@@ -10,16 +10,16 @@ deploy:
             echo "Environment: $ENV0_ENVIRONMENT_NAME"
             echo "Region: us-east-2"
 
-    terraformPlan:
-      - name: Terragrunt Plan
-        run: terragrunt run-all plan --terragrunt-non-interactive
-
     terraformApply:
-      - name: Terragrunt Apply
-        run: terragrunt run-all apply -auto-approve --terragrunt-non-interactive
+      before:
+        - name: Remove stale plan files
+          run: |
+            find . -name ".tf-plan" -delete
+            echo "Plan files removed — modules will re-plan with real dependency outputs"
 
 destroy:
   steps:
     terraformDestroy:
-      - name: Terragrunt Destroy
-        run: terragrunt run-all destroy -auto-approve --terragrunt-non-interactive
+      before:
+        - name: Pre-destroy notice
+          run: echo "Destroying all modules in dependency order..."
