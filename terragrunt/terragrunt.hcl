@@ -1,5 +1,5 @@
 locals {
-  aws_region  = "us-east-1"
+  aws_region  = "us-east-2"
   environment = "dev"
   project     = "demo-env0"
 }

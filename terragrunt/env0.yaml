@@ -1,0 +1,24 @@
+version: 2
+
+deploy:
+  steps:
+    terragruntInit:
+      after:
+        - name: Verify modules
+          run: |
+            echo "Deploying Terragrunt stack: $ENV0_PROJECT_NAME"
+            echo "Environment: $ENV0_ENVIRONMENT_NAME"
+            echo "Region: us-east-2"
+
+    terragruntApply:
+      after:
+        - name: Summary
+          run: |
+            echo "Deployment complete for environment: $ENV0_ENVIRONMENT_ID"
+
+destroy:
+  steps:
+    terragruntDestroy:
+      before:
+        - name: Pre-destroy notice
+          run: echo "Destroying all modules in dependency order..."
