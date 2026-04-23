@@ -6,6 +6,7 @@ dependency "s3" {
   config_path = "../s3"
 
   mock_outputs_allowed_terraform_commands = ["workspace", "init", "validate", "plan"]
+  mock_outputs_merge_strategy_with_state  = "shallow"
   mock_outputs = {
     bucket_id          = "mock-bucket"
     bucket_arn         = "arn:aws:s3:::mock-bucket"
