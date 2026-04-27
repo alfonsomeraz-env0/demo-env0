@@ -2,7 +2,7 @@ version: 2
 
 deploy:
   steps:
-    cloudFormationDeploy:
+    preDeploy:
       before:
         - name: Validate Template
           run: |
@@ -22,7 +22,7 @@ deploy:
 
 destroy:
   steps:
-    cloudFormationDestroy:
+    preDestroy:
       before:
         - name: Cleanup Message
           run: echo "Destroying CloudFormation stack $STACK_NAME..."
