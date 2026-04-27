@@ -21,12 +21,11 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
 resource "aws_eks_cluster" "acme" {
   name     = "acme-financial-eks"
   role_arn = aws_iam_role.eks_cluster.arn
-  version  = "1.29"
+  version  = "1.32"
 
   vpc_config {
-    subnet_ids              = concat(aws_subnet.private[*].id, aws_subnet.public[*].id)
-    endpoint_private_access = true
-    endpoint_public_access  = true
+    subnet_ids             = aws_subnet.public[*].id
+    endpoint_public_access = true
   }
 
   tags = {
@@ -65,6 +64,53 @@ resource "aws_iam_role_policy_attachment" "eks_ecr" {
   role       = aws_iam_role.eks_nodes.name
 }
 
+# Explicit node security group — blocks all internet inbound, allows only
+# node-to-node and EKS control plane communication
+resource "aws_security_group" "eks_nodes" {
+  name        = "acme-eks-nodes-sg"
+  description = "EKS worker nodes — no direct internet inbound"
+  vpc_id      = aws_vpc.acme.id
+
+  ingress {
+    description = "node to node"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    self        = true
+  }
+
+  ingress {
+    description     = "control plane to nodes"
+    from_port       = 1025
+    to_port         = 65535
+    protocol        = "tcp"
+    security_groups = [aws_eks_cluster.acme.vpc_config[0].cluster_security_group_id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "acme-eks-nodes-sg" }
+}
+
+resource "aws_launch_template" "eks_nodes" {
+  name_prefix = "acme-eks-nodes-"
+
+  vpc_security_group_ids = [
+    aws_eks_cluster.acme.vpc_config[0].cluster_security_group_id,
+    aws_security_group.eks_nodes.id,
+  ]
+
+  tag_specifications {
+    resource_type = "instance"
+    tags          = { Name = "acme-payments-node" }
+  }
+}
+
 # ─── DRIFT TARGET ─────────────────────────────────────────────────────────────
 # To manufacture drift: change desired_size to 5 in the AWS console or via CLI:
 #   aws eks update-nodegroup-config \
@@ -75,11 +121,16 @@ resource "aws_eks_node_group" "payments" {
   cluster_name    = aws_eks_cluster.acme.name
   node_group_name = "acme-payments-nodes"
   node_role_arn   = aws_iam_role.eks_nodes.arn
-  subnet_ids      = aws_subnet.private[*].id
-  instance_types  = ["t3.medium"]
+  subnet_ids      = aws_subnet.public[*].id
+  instance_types  = ["t3.small"]
+
+  launch_template {
+    id      = aws_launch_template.eks_nodes.id
+    version = aws_launch_template.eks_nodes.latest_version
+  }
 
   scaling_config {
-    desired_size = 2
+    desired_size = 1
     min_size     = 1
     max_size     = 10
   }

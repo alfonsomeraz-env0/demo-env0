@@ -1,0 +1,14 @@
+environments:
+  infra:
+    name: "ACME EKS Infrastructure"
+    templateName: "acme-financial-eks-infra"
+
+  apps:
+    name: "ACME EKS Applications"
+    templateName: "acme-financial-eks-apps"
+    requiresApproval: true
+    needs:
+      - infra
+
+settings:
+  environmentRemovalStrategy: destroy

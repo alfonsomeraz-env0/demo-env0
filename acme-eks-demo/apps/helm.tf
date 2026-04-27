@@ -7,7 +7,7 @@ resource "helm_release" "ingress_nginx" {
 
   set {
     name  = "controller.replicaCount"
-    value = "2"
+    value = "1"
   }
 
   set {
@@ -52,7 +52,7 @@ resource "helm_release" "payments_app" {
 
   set {
     name  = "replicaCount"
-    value = "2"
+    value = "1"
   }
 
   set {
