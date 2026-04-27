@@ -1,28 +1,22 @@
 version: 2
 
 deploy:
-  steps:
-    preDeploy:
-      before:
-        - name: Validate Template
-          run: |
-            echo "Validating CloudFormation template..."
-            aws cloudformation validate-template \
-              --template-body file://template.yaml
-            echo "Template is valid!"
-
-      after:
-        - name: Print Stack Outputs
-          run: |
-            echo "Fetching stack outputs..."
-            aws cloudformation describe-stacks \
-              --stack-name "$STACK_NAME" \
-              --query "Stacks[0].Outputs" \
-              --output table
+  onSuccess:
+    - name: Validate Template
+      run: |
+        echo "Validating CloudFormation template..."
+        aws cloudformation validate-template \
+          --template-body file://template.yaml
+        echo "Template is valid!"
+    - name: Print Stack Outputs
+      run: |
+        echo "Fetching stack outputs..."
+        aws cloudformation describe-stacks \
+          --stack-name "$STACK_NAME" \
+          --query "Stacks[0].Outputs" \
+          --output table
 
 destroy:
-  steps:
-    preDestroy:
-      before:
-        - name: Cleanup Message
-          run: echo "Destroying CloudFormation stack $STACK_NAME..."
+  onSuccess:
+    - name: Cleanup Message
+      run: echo "Destroyed CloudFormation stack $STACK_NAME..."
