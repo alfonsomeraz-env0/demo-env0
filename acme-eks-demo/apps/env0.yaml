@@ -2,12 +2,7 @@ version: 2
 
 deploy:
   steps:
-    helmDiff:
-      before:
-        - name: Configure kubeconfig
-          run: aws eks update-kubeconfig --name acme-financial-eks --region us-east-2
-
-    helmDeploy:
-      before:
+    helmInit:
+      after:
         - name: Configure kubeconfig
           run: aws eks update-kubeconfig --name acme-financial-eks --region us-east-2
