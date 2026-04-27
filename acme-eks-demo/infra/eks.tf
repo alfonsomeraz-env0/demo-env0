@@ -68,7 +68,7 @@ resource "aws_iam_role_policy_attachment" "eks_ecr" {
 # node-to-node and EKS control plane communication
 resource "aws_security_group" "eks_nodes" {
   name        = "acme-eks-nodes-sg"
-  description = "EKS worker nodes — no direct internet inbound"
+  description = "EKS worker nodes - no direct internet inbound"
   vpc_id      = aws_vpc.acme.id
 
   ingress {
