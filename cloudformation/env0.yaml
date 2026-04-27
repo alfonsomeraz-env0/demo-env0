@@ -1,22 +1,27 @@
 version: 2
 
 deploy:
-  onSuccess:
-    - name: Validate Template
+  onInit:
+    - name: Configure AWS Region
       run: |
-        echo "Validating CloudFormation template..."
-        aws cloudformation validate-template \
-          --template-body file://template.yaml
-        echo "Template is valid!"
+        aws configure set region "$AWS_REGION"
+        echo "AWS region set to: $AWS_REGION"
+  onSuccess:
     - name: Print Stack Outputs
       run: |
         echo "Fetching stack outputs..."
         aws cloudformation describe-stacks \
           --stack-name "$STACK_NAME" \
+          --region "$AWS_REGION" \
           --query "Stacks[0].Outputs" \
           --output table
 
 destroy:
+  onInit:
+    - name: Configure AWS Region
+      run: |
+        aws configure set region "$AWS_REGION"
+        echo "AWS region set to: $AWS_REGION"
   onSuccess:
     - name: Cleanup Message
       run: echo "Destroyed CloudFormation stack $STACK_NAME..."
