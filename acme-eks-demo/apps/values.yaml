@@ -1,0 +1,22 @@
+ingress-nginx:
+  controller:
+    replicaCount: 1
+    nodeSelector:
+      kubernetes.io/os: linux
+
+kube-prometheus-stack:
+  grafana:
+    enabled: true
+  prometheus:
+    prometheusSpec:
+      retention: 7d
+      replicas: 1
+
+payments-app:
+  replicaCount: 1
+  service:
+    type: ClusterIP
+  podLabels:
+    app: payments
+    managed-by: env0
+    environment: production
