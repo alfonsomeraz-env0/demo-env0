@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "eks_logs" {
-  bucket = "acme-financial-eks-logs-${var.aws_account_id}"
+  bucket = "acme-financial-eks-logs-${data.aws_caller_identity.current.account_id}"
 
   tags = {
     Name = "acme-eks-logs"
