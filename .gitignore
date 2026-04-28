@@ -89,6 +89,9 @@ secrets.json
 config.json
 credentials
 
+# Generated per-deployment, never committed
+ansible_public_key.txt
+
 # OS files
 .DS_Store
 Thumbs.db
