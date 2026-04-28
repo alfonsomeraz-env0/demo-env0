@@ -1,3 +1,13 @@
+import {
+  to = aws_s3_bucket.tfstate
+  id = var.bucket_name
+}
+
+import {
+  to = aws_dynamodb_table.tfstate_lock
+  id = var.dynamodb_table_name
+}
+
 resource "aws_s3_bucket" "tfstate" {
   bucket = var.bucket_name
 
