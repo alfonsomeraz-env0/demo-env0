@@ -3,106 +3,237 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>env0 Demo</title>
+  <title>env0 — Live Demo</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-      background: #000000;
-      color: #ffffff;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      background: #000;
+      color: #fff;
       min-height: 100vh;
-      gap: 16px;
+      display: grid;
+      grid-template-rows: 60px 1fr 56px;
+      background-image: radial-gradient(circle, #252725 1px, transparent 1px);
+      background-size: 28px 28px;
     }
-    .card {
-      text-align: center;
-      background: #222423;
-      border: 1px solid #383A39;
-      border-radius: 16px;
-      padding: 56px 72px;
-      max-width: 540px;
-      width: 90%;
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 36px;
+      border-bottom: 1px solid #222423;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
-    .badge {
-      display: inline-block;
+
+    .logo {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #fff;
+    }
+    .logo span { color: #B8E500; }
+
+    .header-center {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: #4b5563;
+    }
+    .live-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
       background: #B8E500;
-      color: #000000;
-      font-size: 0.72rem;
+      box-shadow: 0 0 6px #B8E500;
+      animation: glow 1.8s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    @keyframes glow {
+      0%, 100% { opacity: 1;   box-shadow: 0 0 6px #B8E500; }
+      50%       { opacity: 0.3; box-shadow: none; }
+    }
+
+    .env-badge {
+      font-size: 0.68rem;
       font-weight: 700;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       padding: 4px 14px;
       border-radius: 100px;
-      margin-bottom: 24px;
-      transition: background 0.4s, color 0.4s;
-    }
-    h1 {
-      font-size: 2.4rem;
-      font-weight: 700;
-      line-height: 1.15;
-      margin-bottom: 28px;
-    }
-    h1 span { color: #B8E500; }
-    .divider { border: none; border-top: 1px solid #383A39; margin: 0 0 24px; }
-    .meta { display: flex; flex-direction: column; gap: 12px; text-align: left; }
-    .meta-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; }
-    .meta-label { color: #6b7280; }
-    .meta-value {
-      font-family: 'Menlo', 'Monaco', monospace;
-      background: #383A39;
-      padding: 3px 10px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      transition: opacity 0.2s;
-    }
-    .meta-value.loading { opacity: 0.4; }
-    .stack { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 28px; }
-    .pill { background: #383A39; color: #fff; font-size: 0.78rem; padding: 5px 14px; border-radius: 100px; }
-    .hint { font-size: 0.75rem; color: #4b5563; }
-    .dot {
-      display: inline-block;
-      width: 7px; height: 7px;
-      border-radius: 50%;
       background: #B8E500;
-      margin-right: 6px;
-      animation: pulse 1.5s ease-in-out infinite;
+      color: #000;
+      transition: background 0.5s, color 0.5s;
     }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* ── Main ── */
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+      gap: 52px;
+    }
+
+    .headline {
+      text-align: center;
+      max-width: 640px;
+    }
+    .headline h1 {
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.08;
+    }
+    .headline h1 em {
+      font-style: normal;
+      color: #B8E500;
+    }
+    .headline p {
+      margin-top: 14px;
+      color: #4b5563;
+      font-size: 0.9rem;
+      letter-spacing: 0.01em;
+    }
+    .headline p span {
+      color: #6b7280;
+    }
+    .headline p span + span::before {
+      content: ' · ';
+      color: #383A39;
+    }
+
+    /* ── Stats grid ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      width: 100%;
+      max-width: 580px;
+    }
+
+    .stat {
+      background: #111211;
+      border: 1px solid #222423;
+      border-radius: 14px;
+      padding: 22px 26px;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .stat.highlight {
+      border-color: #B8E500;
+      box-shadow: 0 0 24px rgba(184, 229, 0, 0.12);
+    }
+    .stat-label {
+      font-size: 0.67rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #4b5563;
+      margin-bottom: 10px;
+    }
+    .stat-value {
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #e5e7eb;
+      min-height: 1.5em;
+      transition: color 0.3s;
+    }
+    .stat-value.loading { color: #222423; }
+    .stat-value.accent  { color: #B8E500; }
+
+    /* ── Stack pills ── */
+    .stack {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .pill {
+      border: 1px solid #222423;
+      color: #6b7280;
+      font-size: 0.73rem;
+      padding: 4px 14px;
+      border-radius: 100px;
+      letter-spacing: 0.01em;
+    }
+
+    /* ── Footer ── */
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      border-top: 1px solid #222423;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+    }
+    footer span { font-size: 0.72rem; color: #374151; }
+    footer .sep { color: #222423; }
+    footer .note { color: #4b5563; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="badge" id="badge">Loading...</div>
-    <h1>Powered by <span>env0</span></h1>
-    <hr class="divider" />
-    <div class="meta">
-      <div class="meta-row">
-        <span class="meta-label">Hostname</span>
-        <span class="meta-value loading" id="hostname">—</span>
+
+  <header>
+    <div class="logo">env<span>0</span></div>
+    <div class="header-center">
+      <span class="live-dot"></span>
+      <span>Live &mdash; refreshing every 3s</span>
+    </div>
+    <div class="env-badge" id="env-badge">—</div>
+  </header>
+
+  <main>
+    <div class="headline">
+      <h1>Infrastructure deployed<br>by <em>env0</em></h1>
+      <p>
+        <span>Terraform provisioned</span>
+        <span>Ansible configured</span>
+        <span>nginx load&#8209;balanced</span>
+      </p>
+    </div>
+
+    <div class="stats">
+      <div class="stat" id="stat-hostname">
+        <div class="stat-label">Serving from</div>
+        <div class="stat-value loading" id="hostname">—</div>
       </div>
-      <div class="meta-row">
-        <span class="meta-label">Private IP</span>
-        <span class="meta-value loading" id="private-ip">—</span>
+      <div class="stat">
+        <div class="stat-label">Environment</div>
+        <div class="stat-value loading accent" id="env-name">—</div>
       </div>
-      <div class="meta-row">
-        <span class="meta-label">Environment</span>
-        <span class="meta-value loading" id="env-name">—</span>
+      <div class="stat">
+        <div class="stat-label">Private IP</div>
+        <div class="stat-value loading" id="private-ip">—</div>
       </div>
-      <div class="meta-row">
-        <span class="meta-label">Uptime</span>
-        <span class="meta-value loading" id="uptime">—</span>
+      <div class="stat">
+        <div class="stat-label">App uptime</div>
+        <div class="stat-value loading" id="uptime">—</div>
       </div>
     </div>
+
     <div class="stack">
       <span class="pill">Terraform</span>
       <span class="pill">Ansible</span>
       <span class="pill">AWS EC2</span>
+      <span class="pill">nginx</span>
+      <span class="pill">Flask</span>
     </div>
-  </div>
-  <p class="hint"><span class="dot"></span>Refreshing every 3s — hostname changes as nginx load-balances across app servers</p>
+  </main>
+
+  <footer>
+    <span>Deployed and configured by env0</span>
+    <span class="sep">·</span>
+    <span class="note">Watch <strong style="color:#6b7280">Serving from</strong> — that's nginx switching between app servers</span>
+  </footer>
 
   <script>
     const ENV_COLORS = {
@@ -126,21 +257,31 @@
       el.classList.remove('loading');
     }
 
+    let prevHostname = null;
+
     async function refresh() {
       try {
         const data = await fetch('/api/info').then(r => r.json());
+
+        if (prevHostname !== null && prevHostname !== data.hostname) {
+          const card = document.getElementById('stat-hostname');
+          card.classList.add('highlight');
+          setTimeout(() => card.classList.remove('highlight'), 900);
+        }
+        prevHostname = data.hostname;
+
         set('hostname',   data.hostname);
         set('private-ip', data.private_ip);
         set('env-name',   data.env);
         set('uptime',     fmtUptime(data.uptime));
 
-        const badge = document.getElementById('badge');
+        const badge = document.getElementById('env-badge');
         badge.textContent = data.env.toUpperCase();
         const c = ENV_COLORS[data.env.toLowerCase()] || { bg: '#B8E500', fg: '#000' };
         badge.style.background = c.bg;
         badge.style.color = c.fg;
       } catch (_) {
-        // server rotating during rolling update — next tick will recover
+        // server rotating during rolling update — recovers on next tick
       }
     }
 
