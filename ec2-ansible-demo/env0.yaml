@@ -47,7 +47,8 @@ deploy:
 
         - name: Run Ansible playbook
           run: |
-            ansible-playbook -i inventory/aws_ec2.yml site.yml -v
+            ansible-playbook -i inventory/aws_ec2.yml site.yml \
+              --extra-vars "env_name=${ENV0_ENVIRONMENT_NAME:-dev}" -v
 
         - name: Verify deployment
           run: |

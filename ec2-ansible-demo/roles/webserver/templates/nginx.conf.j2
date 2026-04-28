@@ -1,6 +1,6 @@
 upstream app_backend {
 {% for host in groups['app'] %}
-    server {{ hostvars[host]['private_ip_address'] }}:8080;
+    server {{ hostvars[host]['private_ip_address'] }}:8080 max_fails=1 fail_timeout=10s;
 {% endfor %}
 }
 

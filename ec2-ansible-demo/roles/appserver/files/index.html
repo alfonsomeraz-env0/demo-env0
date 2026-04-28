@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>env0 Demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      background: #000000;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      gap: 16px;
+    }
+    .card {
+      text-align: center;
+      background: #222423;
+      border: 1px solid #383A39;
+      border-radius: 16px;
+      padding: 56px 72px;
+      max-width: 540px;
+      width: 90%;
+    }
+    .badge {
+      display: inline-block;
+      background: #B8E500;
+      color: #000000;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 100px;
+      margin-bottom: 24px;
+      transition: background 0.4s, color 0.4s;
+    }
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 28px;
+    }
+    h1 span { color: #B8E500; }
+    .divider { border: none; border-top: 1px solid #383A39; margin: 0 0 24px; }
+    .meta { display: flex; flex-direction: column; gap: 12px; text-align: left; }
+    .meta-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; }
+    .meta-label { color: #6b7280; }
+    .meta-value {
+      font-family: 'Menlo', 'Monaco', monospace;
+      background: #383A39;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      transition: opacity 0.2s;
+    }
+    .meta-value.loading { opacity: 0.4; }
+    .stack { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 28px; }
+    .pill { background: #383A39; color: #fff; font-size: 0.78rem; padding: 5px 14px; border-radius: 100px; }
+    .hint { font-size: 0.75rem; color: #4b5563; }
+    .dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #B8E500;
+      margin-right: 6px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge" id="badge">Loading...</div>
+    <h1>Powered by <span>env0</span></h1>
+    <hr class="divider" />
+    <div class="meta">
+      <div class="meta-row">
+        <span class="meta-label">Hostname</span>
+        <span class="meta-value loading" id="hostname">—</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Private IP</span>
+        <span class="meta-value loading" id="private-ip">—</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Environment</span>
+        <span class="meta-value loading" id="env-name">—</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Uptime</span>
+        <span class="meta-value loading" id="uptime">—</span>
+      </div>
+    </div>
+    <div class="stack">
+      <span class="pill">Terraform</span>
+      <span class="pill">Ansible</span>
+      <span class="pill">AWS EC2</span>
+    </div>
+  </div>
+  <p class="hint"><span class="dot"></span>Refreshing every 3s — hostname changes as nginx load-balances across app servers</p>
+
+  <script>
+    const ENV_COLORS = {
+      prod:        { bg: '#EF537B', fg: '#fff' },
+      production:  { bg: '#EF537B', fg: '#fff' },
+      staging:     { bg: '#FFC60B', fg: '#000' },
+      dev:         { bg: '#3486CC', fg: '#fff' },
+      development: { bg: '#3486CC', fg: '#fff' },
+    };
+
+    function fmtUptime(s) {
+      const m = Math.floor(s / 60), h = Math.floor(m / 60);
+      if (h > 0) return `${h}h ${m % 60}m ${s % 60}s`;
+      if (m > 0) return `${m}m ${s % 60}s`;
+      return `${s}s`;
+    }
+
+    function set(id, value) {
+      const el = document.getElementById(id);
+      el.textContent = value;
+      el.classList.remove('loading');
+    }
+
+    async function refresh() {
+      try {
+        const data = await fetch('/api/info').then(r => r.json());
+        set('hostname',   data.hostname);
+        set('private-ip', data.private_ip);
+        set('env-name',   data.env);
+        set('uptime',     fmtUptime(data.uptime));
+
+        const badge = document.getElementById('badge');
+        badge.textContent = data.env.toUpperCase();
+        const c = ENV_COLORS[data.env.toLowerCase()] || { bg: '#B8E500', fg: '#000' };
+        badge.style.background = c.bg;
+        badge.style.color = c.fg;
+      } catch (_) {
+        // server rotating during rolling update — next tick will recover
+      }
+    }
+
+    refresh();
+    setInterval(refresh, 3000);
+  </script>
+</body>
+</html>

@@ -1,16 +1,33 @@
 ---
-- name: Create app directory
+- name: Install Flask
+  pip:
+    name: flask
+    executable: pip3
+
+- name: Create app directories
   file:
-    path: /opt/env0-app
+    path: "{{ item }}"
     state: directory
     owner: ubuntu
     group: ubuntu
     mode: "0755"
+  loop:
+    - /opt/env0-app
+    - /opt/env0-app/static
 
-- name: Deploy app page
-  template:
-    src: index.html.j2
-    dest: /opt/env0-app/index.html
+- name: Deploy Flask app
+  copy:
+    src: app.py
+    dest: /opt/env0-app/app.py
+    owner: ubuntu
+    group: ubuntu
+    mode: "0644"
+  notify: Restart app
+
+- name: Deploy landing page
+  copy:
+    src: index.html
+    dest: /opt/env0-app/static/index.html
     owner: ubuntu
     group: ubuntu
     mode: "0644"

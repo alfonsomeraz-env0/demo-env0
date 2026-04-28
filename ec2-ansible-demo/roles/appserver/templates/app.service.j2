@@ -6,7 +6,9 @@ After=network.target
 Type=simple
 User=ubuntu
 WorkingDirectory=/opt/env0-app
-ExecStart=/usr/bin/python3 -m http.server 8080
+Environment=APP_ENV={{ env_name }}
+Environment=PRIVATE_IP={{ ansible_default_ipv4.address }}
+ExecStart=/usr/bin/python3 /opt/env0-app/app.py
 Restart=always
 RestartSec=5
 
