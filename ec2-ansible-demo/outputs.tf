@@ -1,14 +1,14 @@
-output "instance_id" {
-  description = "ID of the EC2 instance"
-  value       = aws_instance.demo.id
+output "web_instance_ips" {
+  description = "Public IPs of web tier instances"
+  value       = aws_instance.web[*].public_ip
 }
 
-output "instance_public_ip" {
-  description = "Public IP of the EC2 instance"
-  value       = aws_instance.demo.public_ip
+output "app_instance_ips" {
+  description = "Public IPs of app tier instances"
+  value       = aws_instance.app[*].public_ip
 }
 
-output "instance_private_ip" {
-  description = "Private IP of the EC2 instance"
-  value       = aws_instance.demo.private_ip
+output "web_url" {
+  description = "Load balancer URL"
+  value       = "http://${aws_instance.web[0].public_ip}"
 }

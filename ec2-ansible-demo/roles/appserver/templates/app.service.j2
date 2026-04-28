@@ -1,0 +1,14 @@
+[Unit]
+Description=env0 Demo App Server
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/env0-app
+ExecStart=/usr/bin/python3 -m http.server 8080
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

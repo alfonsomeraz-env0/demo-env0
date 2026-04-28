@@ -1,0 +1,32 @@
+---
+- name: Create app directory
+  file:
+    path: /opt/env0-app
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: "0755"
+
+- name: Deploy app page
+  template:
+    src: index.html.j2
+    dest: /opt/env0-app/index.html
+    owner: ubuntu
+    group: ubuntu
+    mode: "0644"
+  notify: Restart app
+
+- name: Install systemd service
+  template:
+    src: app.service.j2
+    dest: /etc/systemd/system/env0-app.service
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart app
+
+- name: Start and enable app service
+  service:
+    name: env0-app
+    state: started
+    enabled: yes

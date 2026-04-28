@@ -10,73 +10,59 @@ deploy:
             echo "$SSH_PRIVATE_KEY" | tr ';' '\n' | tr -d "\r" > ~/.ssh/private_key.pem
             chmod 600 ~/.ssh/private_key.pem
             echo "SSH key written to ~/.ssh/private_key.pem"
-        
-        - name: Install Ansible
+
+        - name: Install Ansible and dependencies
           run: |
-            if ! command -v ansible &> /dev/null; then
-              echo "Installing Ansible..."
-              pip3 install ansible
-            fi
-    
+            pip3 install ansible boto3 botocore
+            ansible-galaxy collection install -r requirements.yml
+
     terraformApply:
       after:
-        - name: Wait for Instance
+        - name: Wait for instances to initialize
           run: |
-            echo "Waiting for EC2 instance to be ready..."
+            echo "Waiting for EC2 instances to initialize..."
             sleep 60
-        
-        - name: Get EC2 IP
+
+        - name: Wait for SSH on all instances
           run: |
-            EC2_IP=$(terraform output -raw instance_public_ip)
-            echo "EC2 Instance IP: $EC2_IP"
-            echo "$EC2_IP" > instance_ip.txt
-        
-        - name: Wait for SSH
-          run: |
-            export ANSIBLE_HOST_KEY_CHECKING=False
-            EC2_IP=$(cat instance_ip.txt)
-            echo "Waiting for SSH on $EC2_IP..."
-            
-            for i in {1..40}; do
-              echo "Attempt $i/40..."
-              if ssh -o StrictHostKeyChecking=no \
-                     -o ConnectTimeout=10 \
-                     -o BatchMode=yes \
-                     -i ~/.ssh/private_key.pem \
-                     ubuntu@$EC2_IP "echo 'SSH Ready'" 2>/dev/null; then
-                echo "✅ SSH is ready!"
+            WEB_IPS=$(terraform output -json web_instance_ips | python3 -c "import sys,json; print(' '.join(json.load(sys.stdin)))")
+            APP_IPS=$(terraform output -json app_instance_ips | python3 -c "import sys,json; print(' '.join(json.load(sys.stdin)))")
+            ALL_IPS="$WEB_IPS $APP_IPS"
+
+            for IP in $ALL_IPS; do
+              echo "Waiting for SSH on $IP..."
+              for i in $(seq 1 40); do
+                if ssh -o StrictHostKeyChecking=no \
+                       -o ConnectTimeout=10 \
+                       -o BatchMode=yes \
+                       -i ~/.ssh/private_key.pem \
+                       ubuntu@$IP "echo ready" 2>/dev/null; then
+                  echo "  ✅ $IP is ready"
+                  break
+                fi
+                echo "  Attempt $i/40, retrying in 10s..."
                 sleep 10
-                break
-              fi
-              echo "SSH not ready yet, waiting 10 seconds..."
-              sleep 10
+              done
             done
-        
-        - name: Run Ansible Playbook
+
+        - name: Run Ansible playbook
           run: |
-            export ANSIBLE_HOST_KEY_CHECKING=False
-            EC2_IP=$(cat instance_ip.txt)
-            echo "Running Ansible playbook against $EC2_IP..."
-            ansible-playbook -i "${EC2_IP}," \
-              -u ubuntu \
-              --private-key=~/.ssh/private_key.pem \
-              playbook.yml
-        
-        - name: Display Results
+            ansible-playbook -i inventory/aws_ec2.yml site.yml -v
+
+        - name: Verify deployment
           run: |
-            EC2_IP=$(cat instance_ip.txt)
+            WEB_URL=$(terraform output -raw web_url)
             echo "=========================================="
-            echo "🎉 Deployment Complete!"
+            echo "Deployment Complete!"
+            echo "Web URL: $WEB_URL"
             echo "=========================================="
-            echo "Instance IP: $EC2_IP"
-            echo "Web Server: http://$EC2_IP"
-            echo "=========================================="
-            sleep 10
-            curl -s http://$EC2_IP || echo "Web server starting up..."
+            sleep 5
+            curl -sf "$WEB_URL/health" && echo "Health check passed" || echo "Health check pending"
+            curl -s "$WEB_URL" | head -5 || true
 
 destroy:
   steps:
     terraformDestroy:
       before:
-        - name: Cleanup Message
+        - name: Cleanup message
           run: echo "Destroying infrastructure..."

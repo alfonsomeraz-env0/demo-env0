@@ -1,0 +1,19 @@
+---
+- name: Common setup for all instances
+  hosts: all
+  become: yes
+  roles:
+    - common
+    - security
+
+- name: Configure app tier
+  hosts: app
+  become: yes
+  roles:
+    - appserver
+
+- name: Configure web tier (nginx reverse proxy)
+  hosts: web
+  become: yes
+  roles:
+    - webserver
