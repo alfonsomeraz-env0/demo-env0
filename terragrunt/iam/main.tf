@@ -1,3 +1,13 @@
+import {
+  to = aws_iam_role.ec2_role
+  id = "dev-ec2-role"
+}
+
+import {
+  to = aws_iam_instance_profile.ec2_profile
+  id = "dev-ec2-profile"
+}
+
 resource "aws_iam_role" "ec2_role" {
   name = "${var.environment}-ec2-role"
 
