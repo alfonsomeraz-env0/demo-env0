@@ -1,8 +1,0 @@
-version: 2
-
-deploy:
-  steps:
-    helmInit:
-      after:
-        - name: Configure kubeconfig
-          run: aws eks update-kubeconfig --name acme-financial-eks --region us-east-2

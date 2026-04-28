@@ -2,48 +2,113 @@
 - name: Configure EC2 Instance with Web Server
   hosts: all
   become: yes
-  gather_facts: no
-  
+  gather_facts: yes
+
   tasks:
-    - name: Install and configure Apache in one step
-      raw: |
-        export DEBIAN_FRONTEND=noninteractive
-        apt-get update -qq && apt-get install -y apache2
-        systemctl start apache2
-        systemctl enable apache2
-        cat > /var/www/html/index.html <<'EOF'
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>env0 Demo Success</title>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              color: white;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              height: 100vh;
-              margin: 0;
-            }
-            .container {
-              text-align: center;
-              background: rgba(255,255,255,0.1);
-              padding: 50px;
-              border-radius: 20px;
-            }
-            h1 { font-size: 3em; margin: 0; }
-            p { font-size: 1.2em; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h1>🎉 Success!</h1>
-            <p>EC2 provisioned by <strong>env0</strong></p>
-            <p>Configured with <strong>Ansible</strong></p>
-          </div>
-        </body>
-        </html>
-        EOF
-      changed_when: false
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install Apache
+      apt:
+        name: apache2
+        state: present
+
+    - name: Enable and start Apache
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+
+    - name: Deploy landing page
+      copy:
+        dest: /var/www/html/index.html
+        mode: "0644"
+        content: |
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>env0 Demo</title>
+            <style>
+              *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+              body {
+                font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+                background: #000000;
+                color: #ffffff;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+              }
+              .card {
+                text-align: center;
+                background: #222423;
+                border: 1px solid #383A39;
+                border-radius: 16px;
+                padding: 64px 80px;
+                max-width: 520px;
+                width: 90%;
+              }
+              .badge {
+                display: inline-block;
+                background: #B8E500;
+                color: #000000;
+                font-size: 0.75rem;
+                font-weight: 700;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                padding: 4px 12px;
+                border-radius: 100px;
+                margin-bottom: 28px;
+              }
+              h1 {
+                font-size: 2.5rem;
+                font-weight: 700;
+                line-height: 1.15;
+                margin-bottom: 16px;
+              }
+              h1 span { color: #B8E500; }
+              p {
+                color: #9ca3a0;
+                font-size: 1rem;
+                line-height: 1.6;
+                margin-bottom: 8px;
+              }
+              .divider {
+                border: none;
+                border-top: 1px solid #383A39;
+                margin: 32px 0;
+              }
+              .stack {
+                display: flex;
+                justify-content: center;
+                gap: 24px;
+                flex-wrap: wrap;
+              }
+              .pill {
+                background: #383A39;
+                color: #ffffff;
+                font-size: 0.8rem;
+                padding: 6px 16px;
+                border-radius: 100px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="card">
+              <div class="badge">Deployment Successful</div>
+              <h1>Powered by <span>env0</span></h1>
+              <p>EC2 instance provisioned with Terraform</p>
+              <p>and configured with Ansible</p>
+              <hr class="divider" />
+              <div class="stack">
+                <span class="pill">Terraform</span>
+                <span class="pill">Ansible</span>
+                <span class="pill">AWS EC2</span>
+              </div>
+            </div>
+          </body>
+          </html>

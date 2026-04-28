@@ -9,12 +9,7 @@ deploy:
             mkdir -p ~/.ssh
             echo "$SSH_PRIVATE_KEY" | tr ';' '\n' | tr -d "\r" > ~/.ssh/private_key.pem
             chmod 600 ~/.ssh/private_key.pem
-            echo "SSH key created with permissions:"
-            ls -la ~/.ssh/private_key.pem
-            echo "First line of key:"
-            head -1 ~/.ssh/private_key.pem
-            echo "Last line of key:"
-            tail -1 ~/.ssh/private_key.pem
+            echo "SSH key written to ~/.ssh/private_key.pem"
         
         - name: Install Ansible
           run: |

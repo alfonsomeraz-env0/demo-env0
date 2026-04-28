@@ -11,12 +11,10 @@ provider "aws" {
   region = var.aws_region
 }
 
-# Get default VPC
 data "aws_vpc" "default" {
   default = true
 }
 
-# Get default subnet
 data "aws_subnets" "default" {
   filter {
     name   = "vpc-id"
@@ -24,10 +22,9 @@ data "aws_subnets" "default" {
   }
 }
 
-# Security group to allow SSH and HTTP
 resource "aws_security_group" "demo_sg" {
-  name_prefix = "env0-demo-"
-  vpc_id      = data.aws_vpc.default.id
+  name   = "env0-ansible-demo-sg"
+  vpc_id = data.aws_vpc.default.id
 
   ingress {
     from_port   = 22
@@ -51,20 +48,22 @@ resource "aws_security_group" "demo_sg" {
   }
 
   tags = {
-    Name = "env0-demo-sg"
+    Name    = "env0-ansible-demo-sg"
+    ManagedBy = "env0"
   }
 }
 
-# EC2 Instance
 resource "aws_instance" "demo" {
-  ami           = var.ami_id
-  instance_type = var.instance_type
-  key_name      = var.key_name
-  
+  ami                         = var.ami_id
+  instance_type               = var.instance_type
+  key_name                    = var.key_name
+  associate_public_ip_address = true
+
   vpc_security_group_ids = [aws_security_group.demo_sg.id]
   subnet_id              = data.aws_subnets.default.ids[0]
 
   tags = {
-    Name = "env0-demo-instance"
+    Name      = "env0-ansible-demo"
+    ManagedBy = "env0"
   }
 }
