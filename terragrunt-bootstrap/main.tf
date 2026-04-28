@@ -1,11 +1,11 @@
 import {
   to = aws_s3_bucket.tfstate
-  id = var.bucket_name
+  id = "demo-env0-terragrunt-state"
 }
 
 import {
   to = aws_dynamodb_table.tfstate_lock
-  id = var.dynamodb_table_name
+  id = "demo-env0-terragrunt-lock"
 }
 
 resource "aws_s3_bucket" "tfstate" {
