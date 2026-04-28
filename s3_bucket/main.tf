@@ -15,8 +15,9 @@ resource "aws_s3_bucket" "this" {
   bucket = var.bucket_name
 
   tags = {
-    Name        = var.bucket_name
-    Environment = var.environment
+    Name        = "this-is-my-test-bucket-alfonso-1234"
+    Environment = "dev"
+    Test-Tag    = "This is a tag I added to show drift"
   }
 }
 
