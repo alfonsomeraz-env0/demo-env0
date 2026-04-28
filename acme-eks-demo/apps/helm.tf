@@ -4,6 +4,7 @@ resource "helm_release" "ingress_nginx" {
   chart      = "ingress-nginx"
   version    = "4.9.1"
   namespace  = kubernetes_namespace.ingress.metadata[0].name
+  timeout    = 600
 
   set {
     name  = "controller.replicaCount"
@@ -18,37 +19,13 @@ resource "helm_release" "ingress_nginx" {
   depends_on = [kubernetes_namespace.ingress]
 }
 
-resource "helm_release" "prometheus" {
-  name       = "prometheus"
-  repository = "https://prometheus-community.github.io/helm-charts"
-  chart      = "kube-prometheus-stack"
-  version    = "57.0.3"
-  namespace  = kubernetes_namespace.monitoring.metadata[0].name
-
-  set {
-    name  = "grafana.enabled"
-    value = "true"
-  }
-
-  set {
-    name  = "prometheus.prometheusSpec.retention"
-    value = "7d"
-  }
-
-  set {
-    name  = "prometheus.prometheusSpec.replicas"
-    value = "1"
-  }
-
-  depends_on = [kubernetes_namespace.monitoring]
-}
-
 resource "helm_release" "payments_app" {
   name       = "payments-app"
   repository = "https://charts.bitnami.com/bitnami"
   chart      = "nginx"
   version    = "15.14.0"
   namespace  = kubernetes_namespace.payments.metadata[0].name
+  timeout    = 600
 
   set {
     name  = "replicaCount"
