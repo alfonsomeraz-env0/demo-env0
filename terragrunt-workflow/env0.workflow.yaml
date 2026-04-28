@@ -8,13 +8,6 @@ environments:
     templateName: "terragrunt-deployment"
     needs:
       - bootstrap
-    variablesFromOutputs:
-      TG_STATE_BUCKET:
-        environment: bootstrap
-        output: bucket_name
-      TG_STATE_DYNAMODB_TABLE:
-        environment: bootstrap
-        output: dynamodb_table_name
 
 settings:
   environmentRemovalStrategy: destroy
