@@ -4,13 +4,6 @@ deploy:
   steps:
     terraformInit:
       before:
-        - name: Generate SSH key pair
-          run: |
-            mkdir -p ~/.ssh
-            ssh-keygen -t ed25519 -f ~/.ssh/ansible_key -N "" -q
-            cp ~/.ssh/ansible_key.pub ./ansible_public_key.txt
-            echo "SSH key pair generated"
-
         - name: Install Ansible and dependencies
           run: |
             pip3 install ansible boto3 botocore
@@ -18,6 +11,13 @@ deploy:
 
     terraformApply:
       after:
+        - name: Setup SSH key from Terraform output
+          run: |
+            mkdir -p ~/.ssh
+            terraform output -raw private_key_pem > ~/.ssh/ansible_key
+            chmod 600 ~/.ssh/ansible_key
+            echo "SSH key ready"
+
         - name: Wait for instances to initialize
           run: |
             echo "Waiting for EC2 instances to initialize..."

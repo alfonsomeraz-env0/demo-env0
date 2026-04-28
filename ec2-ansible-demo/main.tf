@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    tls = {
+      source  = "hashicorp/tls"
+      version = "~> 4.0"
+    }
   }
 }
 
@@ -37,10 +41,14 @@ data "aws_subnets" "default" {
   }
 }
 
-# Public key written by the workflow before terraform runs
+# Terraform generates and owns the key — consistent across plan/apply pods
+resource "tls_private_key" "ansible" {
+  algorithm = "ED25519"
+}
+
 resource "aws_key_pair" "ansible" {
   key_name_prefix = "env0-ansible-demo-"
-  public_key      = file("${path.module}/ansible_public_key.txt")
+  public_key      = tls_private_key.ansible.public_key_openssh
 
   tags = { ManagedBy = "env0" }
 }
