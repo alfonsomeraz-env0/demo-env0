@@ -1,4 +1,20 @@
 ---
+- name: Bootstrap Python 3.8+
+  hosts: all
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Ensure Python 3.8+ is installed
+      raw: |
+        export DEBIAN_FRONTEND=noninteractive
+        if python3 -c "import sys; exit(0 if sys.version_info >= (3,7) else 1)" 2>/dev/null; then
+          echo "Python 3.7+ already present, skipping"
+        else
+          apt-get update -qq
+          apt-get install -y python3.8
+          update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
+        fi
+
 - name: Common setup for all instances
   hosts: all
   become: yes

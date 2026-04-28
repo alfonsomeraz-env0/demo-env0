@@ -5,6 +5,7 @@ resource "helm_release" "ingress_nginx" {
   version    = "4.9.1"
   namespace  = kubernetes_namespace.ingress.metadata[0].name
   timeout    = 600
+  wait       = false
 
   set {
     name  = "controller.replicaCount"
@@ -17,33 +18,4 @@ resource "helm_release" "ingress_nginx" {
   }
 
   depends_on = [kubernetes_namespace.ingress]
-}
-
-resource "helm_release" "payments_app" {
-  name       = "payments-app"
-  repository = "https://charts.bitnami.com/bitnami"
-  chart      = "nginx"
-  version    = "15.14.0"
-  namespace  = kubernetes_namespace.payments.metadata[0].name
-  timeout    = 600
-
-  set {
-    name  = "replicaCount"
-    value = "1"
-  }
-
-  set {
-    name  = "service.type"
-    value = "ClusterIP"
-  }
-
-  values = [<<-EOT
-    podLabels:
-      app: payments
-      managed-by: env0
-      environment: production
-    EOT
-  ]
-
-  depends_on = [kubernetes_namespace.payments]
 }
