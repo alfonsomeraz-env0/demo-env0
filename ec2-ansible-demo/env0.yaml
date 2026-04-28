@@ -4,51 +4,43 @@ deploy:
   steps:
     terraformInit:
       before:
-        - name: Setup SSH Key
-          run: |
-            mkdir -p ~/.ssh
-            echo "$SSH_PRIVATE_KEY" | tr ';' '\n' | tr -d "\r" > ~/.ssh/private_key.pem
-            chmod 600 ~/.ssh/private_key.pem
-            echo "SSH key written to ~/.ssh/private_key.pem"
-
         - name: Install Ansible and dependencies
           run: |
             pip3 install ansible boto3 botocore
             ansible-galaxy collection install -r requirements.yml
 
+        - name: Install AWS Session Manager plugin
+          run: |
+            curl -s "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" \
+              -o /tmp/session-manager-plugin.deb
+            dpkg -i /tmp/session-manager-plugin.deb
+            session-manager-plugin --version
+
     terraformApply:
       after:
-        - name: Wait for instances to initialize
+        - name: Wait for SSM registration
           run: |
-            echo "Waiting for EC2 instances to initialize..."
-            sleep 60
+            EXPECTED=$((${TF_VAR_web_count:-1} + ${TF_VAR_app_count:-2}))
+            echo "Waiting for $EXPECTED instances to register with SSM..."
 
-        - name: Wait for SSH on all instances
-          run: |
-            WEB_IPS=$(terraform output -json web_instance_ips | python3 -c "import sys,json; print(' '.join(json.load(sys.stdin)))")
-            APP_IPS=$(terraform output -json app_instance_ips | python3 -c "import sys,json; print(' '.join(json.load(sys.stdin)))")
-            ALL_IPS="$WEB_IPS $APP_IPS"
-
-            for IP in $ALL_IPS; do
-              echo "Waiting for SSH on $IP..."
-              for i in $(seq 1 40); do
-                if ssh -o StrictHostKeyChecking=no \
-                       -o ConnectTimeout=10 \
-                       -o BatchMode=yes \
-                       -i ~/.ssh/private_key.pem \
-                       ubuntu@$IP "echo ready" 2>/dev/null; then
-                  echo "  ✅ $IP is ready"
-                  break
-                fi
-                echo "  Attempt $i/40, retrying in 10s..."
-                sleep 10
-              done
+            for i in $(seq 1 40); do
+              REGISTERED=$(aws ssm describe-instance-information \
+                --filters "Key=tag:Project,Values=env0-ansible-demo" \
+                --query "length(InstanceInformationList)" \
+                --output text --region ${TF_VAR_aws_region:-us-east-2})
+              echo "  Registered: $REGISTERED / $EXPECTED"
+              if [ "$REGISTERED" -ge "$EXPECTED" ]; then
+                echo "  ✅ All instances registered"
+                break
+              fi
+              sleep 15
             done
 
         - name: Run Ansible playbook
           run: |
+            SSM_BUCKET=$(terraform output -raw ssm_bucket_name)
             ansible-playbook -i inventory/aws_ec2.yml site.yml \
-              --extra-vars "env_name=${ENV0_ENVIRONMENT_NAME:-dev}" -v
+              --extra-vars "env_name=${ENV0_ENVIRONMENT_NAME:-dev} ansible_aws_ssm_bucket_name=$SSM_BUCKET" -v
 
         - name: Verify deployment
           run: |

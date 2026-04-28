@@ -8,11 +8,6 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
-variable "key_name" {
-  description = "SSH key pair name"
-  type        = string
-}
-
 variable "web_count" {
   description = "Number of web tier (nginx) instances"
   default     = 1
