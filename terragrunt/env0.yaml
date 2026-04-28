@@ -23,5 +23,9 @@ destroy:
   steps:
     terraformDestroy:
       before:
-        - name: Pre-destroy notice
-          run: echo "Destroying all modules in dependency order..."
+        - name: Destroy EC2 first to release public IPs and subnet dependencies
+          run: |
+            terragrunt destroy -auto-approve --terragrunt-non-interactive --terragrunt-working-dir ec2
+        - name: Destroy remaining modules in reverse dependency order
+          run: |
+            terragrunt run-all destroy -auto-approve --terragrunt-non-interactive --terragrunt-exclude-dir ec2
