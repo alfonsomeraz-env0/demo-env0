@@ -1,0 +1,11 @@
+version: 2
+
+deploy:
+  steps:
+    terraformApply:
+      after:
+        - name: Print state backend info
+          run: |
+            echo "S3 bucket:      $(terraform output -raw bucket_name)"
+            echo "DynamoDB table: $(terraform output -raw dynamodb_table_name)"
+            echo "Region:         $(terraform output -raw aws_region)"
