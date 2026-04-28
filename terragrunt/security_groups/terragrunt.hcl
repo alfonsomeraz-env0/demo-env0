@@ -5,7 +5,7 @@ include "root" {
 dependency "vpc" {
   config_path = "../vpc"
 
-  mock_outputs_allowed_terraform_commands = ["workspace", "init", "validate", "plan"]
+  mock_outputs_allowed_terraform_commands = ["workspace", "init", "validate", "plan", "destroy"]
   mock_outputs_merge_strategy_with_state  = "shallow"
   mock_outputs = {
     vpc_id           = "vpc-00000000"

@@ -1,8 +1,3 @@
-import {
-  to = aws_s3_bucket.main
-  id = "demo-env0-dev-alfonso"
-}
-
 resource "aws_s3_bucket" "main" {
   bucket = var.bucket_name
 
