@@ -11,18 +11,15 @@ deploy:
             echo "Region: us-east-2"
 
     terraformApply:
-      before:
-        - name: Apply in dependency order with real outputs
+      override:
+        - name: Apply all modules in dependency order
           run: |
             terragrunt run-all apply -auto-approve --terragrunt-non-interactive
-        - name: Regenerate plan files to reflect applied state
-          run: |
-            terragrunt run-all plan -out=.tf-plan --terragrunt-non-interactive
 
 destroy:
   steps:
     terraformDestroy:
-      before:
+      override:
         - name: Destroy EC2 first to release public IPs and subnet dependencies
           run: |
             terragrunt destroy -auto-approve --terragrunt-non-interactive --terragrunt-working-dir ec2
