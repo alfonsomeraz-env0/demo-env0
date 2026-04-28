@@ -11,6 +11,21 @@ provider "aws" {
   region = var.aws_region
 }
 
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 data "aws_vpc" "default" {
   default = true
 }
@@ -91,7 +106,7 @@ resource "aws_security_group" "app_sg" {
 
 resource "aws_instance" "web" {
   count                       = var.web_count
-  ami                         = var.ami_id
+  ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.instance_type
   key_name                    = var.key_name
   associate_public_ip_address = true
@@ -108,7 +123,7 @@ resource "aws_instance" "web" {
 
 resource "aws_instance" "app" {
   count                       = var.app_count
-  ami                         = var.ami_id
+  ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.instance_type
   key_name                    = var.key_name
   associate_public_ip_address = true
