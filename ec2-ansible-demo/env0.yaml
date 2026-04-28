@@ -11,9 +11,9 @@ deploy:
 
         - name: Install AWS Session Manager plugin
           run: |
-            curl -s "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" \
-              -o /tmp/session-manager-plugin.deb
-            dpkg -i /tmp/session-manager-plugin.deb
+            curl -sL "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin" \
+              -o /usr/local/bin/session-manager-plugin
+            chmod +x /usr/local/bin/session-manager-plugin
             session-manager-plugin --version
 
     terraformApply:
