@@ -7,11 +7,11 @@ locals {
 remote_state {
   backend = "s3"
   config = {
-    bucket         = "demo-env0-terragrunt-state"
+    bucket         = get_env("TG_STATE_BUCKET", "demo-env0-terragrunt-state")
     key            = "${path_relative_to_include()}/terraform.tfstate"
     region         = local.aws_region
     encrypt        = true
-    dynamodb_table = "demo-env0-terragrunt-lock"
+    dynamodb_table = get_env("TG_STATE_DYNAMODB_TABLE", "demo-env0-terragrunt-lock")
   }
   generate = {
     path      = "backend.tf"
