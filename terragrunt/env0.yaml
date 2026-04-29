@@ -9,9 +9,15 @@ deploy:
             echo "Deploying Terragrunt stack: $ENV0_PROJECT_NAME"
             echo "Environment: $ENV0_ENVIRONMENT_NAME"
             echo "Region: us-east-2"
-        - name: Apply all modules before plan to avoid mock output bake-in
+
+    terraformPlan:
+      after:
+        - name: Apply all modules with real dependency outputs
           run: |
             terragrunt run-all apply -auto-approve --terragrunt-non-interactive
+        - name: Regenerate plan files to reflect applied state
+          run: |
+            terragrunt run-all plan -out=.tf-plan --terragrunt-non-interactive
 
 destroy:
   steps:
