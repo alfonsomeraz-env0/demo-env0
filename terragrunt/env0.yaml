@@ -18,6 +18,11 @@ deploy:
 
 destroy:
   steps:
+    terraformApply:
+      override:
+        - name: Skip apply during destroy
+          run: echo "Skipping apply step during destroy"
+
     terraformDestroy:
       override:
         - name: Destroy EC2 first to release public IPs and subnet dependencies
