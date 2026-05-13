@@ -1,4 +1,4 @@
-# Workflows — Full Stack Orchestration Demo
+# Multi-Tier Workflow Demo
 
 Demonstrates env0 Workflow Environments to deploy a complete AWS stack across four dependent environments with dependency management and approval gates.
 
@@ -19,8 +19,8 @@ vpc  ─────────────────────────
 | Stage | Template | Depends On | Approval |
 |---|---|---|---|
 | `vpc` | `vpc` | — | No |
-| `sg` | `security_group` | `vpc` | No |
-| `db` | `s3_bucket` | `vpc` | **Yes** |
+| `sg` | `security-group` | `vpc` | No |
+| `db` | `s3-bucket` | `vpc` | **Yes** |
 | `ec2` | `ec2` | `db`, `sg` | No |
 
 ## How env0 Workflows Work
@@ -37,11 +37,11 @@ On **destroy**, the order reverses automatically — EC2 is destroyed before its
 ## env0 Setup
 
 1. Create a **Workflow Template** in env0
-2. Point to `workflows/env0.workflow.yaml`
-3. Ensure each referenced template (`vpc`, `security_group`, `s3_bucket`, `ec2`) exists in your env0 organization
+2. Point to `multi-tier-workflow/env0.workflow.yaml`
+3. Ensure each referenced template (`vpc`, `security-group`, `s3-bucket`, `ec2`) exists in your env0 organization
 4. Deploy the workflow — env0 handles the sequencing
 
-> **Note:** The template names in `env0.workflow.yaml` (`vpc`, `security_group`, `s3_bucket`, `ec2`) must match template names registered in your env0 organization. The corresponding Terraform code lives in the sibling folders of this repo.
+> **Note:** The template names in `env0.workflow.yaml` must match template names registered in your env0 organization. The corresponding Terraform code lives in the sibling folders of this repo.
 
 ## Destroy Strategy
 
@@ -56,6 +56,6 @@ When the workflow environment is removed, all child environments are destroyed i
 
 The individual components used in this workflow each have their own standalone demos:
 - `vpc/` — VPC module
-- `security_group/` — Security group module
-- `s3_bucket/` — S3 bucket module
+- `security-group/` — Security group module
+- `s3-bucket/` — S3 bucket module
 - `ec2/` — EC2 instance module

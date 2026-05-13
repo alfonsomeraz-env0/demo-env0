@@ -45,7 +45,7 @@ These outputs are consumed by the `ec2`, `security_group`, and `terraform` demos
 
 ## Used By
 
-- `workflows/` — this is the foundation layer in the full-stack workflow
+- `multi-tier-workflow/` — this is the foundation layer in the full-stack workflow
 - `terraform/` — the root module includes this as a child module
 
 ## Resources Created
