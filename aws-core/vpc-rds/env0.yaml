@@ -1,0 +1,27 @@
+version: 2
+
+deploy:
+  steps:
+    terraformApply:
+      after:
+        - name: Print connection info
+          run: |
+            echo "================================"
+            echo "VPC + RDS Deployment Complete"
+            echo "================================"
+            echo "VPC ID:       $(terraform output -raw vpc_id)"
+            echo "DB Endpoint:  $(terraform output -raw db_endpoint)"
+            echo "DB Host:      $(terraform output -raw db_host)"
+            echo "DB Port:      $(terraform output -raw db_port)"
+            echo "DB Name:      $(terraform output -raw db_name)"
+            echo "DB User:      $(terraform output -raw db_username)"
+            echo ""
+            echo "Connection string (psql):"
+            echo "  psql -h $(terraform output -raw db_host) -U $(terraform output -raw db_username) -d $(terraform output -raw db_name)"
+
+destroy:
+  steps:
+    terraformDestroy:
+      before:
+        - name: Confirm destroy
+          run: echo "Destroying VPC + RDS stack for $ENV0_ENVIRONMENT_NAME..."

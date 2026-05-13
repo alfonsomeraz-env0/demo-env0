@@ -8,6 +8,15 @@ Each folder is a standalone demo — import it into env0 as a template and deplo
 
 ## Demo Index
 
+### AWS Core
+
+| Demo | Description |
+|---|---|
+| [`aws-core/`](./aws-core/README.md) | Grouped collection of core AWS demos |
+| [`aws-core/ec2-ansible/`](./aws-core/ec2-ansible/README.md) | Terraform + Ansible — provision EC2 and configure it in one env0 deploy |
+| [`aws-core/ecs-fargate/`](./aws-core/ecs-fargate/README.md) | Serverless containers with ECS Fargate, ALB, and ECR |
+| [`aws-core/vpc-rds/`](./aws-core/vpc-rds/README.md) | Two-tier VPC with private RDS instance |
+
 ### Terraform Modules
 
 | Demo | Description |
@@ -23,7 +32,6 @@ Each folder is a standalone demo — import it into env0 as a template and deplo
 
 | Demo | Description |
 |---|---|
-| [`ec2-ansible/`](./ec2-ansible/README.md) | Terraform + Ansible — provisions EC2 and configures it with Ansible in one env0 deploy |
 | [`custom-flows/`](./custom-flows/README.md) | Custom flow examples: TFLint, multi-tool scanning, approval gates |
 | [`cloudformation/`](./cloudformation/README.md) | CloudFormation via env0 — shows IaC-tool agnosticism |
 
@@ -65,7 +73,8 @@ Each folder is a standalone demo — import it into env0 as a template and deplo
 ```
 Beginner      s3-bucket → vpc → ec2
 Intermediate  security-group → iam-role → terraform (full stack)
-Advanced      ec2-ansible → custom-flows → cloudformation
+AWS Core      aws-core/ec2-ansible → aws-core/ecs-fargate → aws-core/vpc-rds
+Advanced      custom-flows → cloudformation
 Workflows     multi-tier-workflow → terragrunt-workflow → eks-workflow
 ```
 
@@ -75,7 +84,7 @@ Workflows     multi-tier-workflow → terragrunt-workflow → eks-workflow
 
 All demos target AWS. You'll need:
 - AWS credentials configured in env0 (IAM user or OIDC role)
-- Sufficient permissions for the resources each demo creates (EC2, S3, VPC, IAM, DynamoDB, CloudFormation)
+- Sufficient permissions for the resources each demo creates (EC2, ECS, RDS, S3, VPC, IAM, DynamoDB, CloudFormation)
 
 ---
 
@@ -83,27 +92,30 @@ All demos target AWS. You'll need:
 
 ```
 env0-demos/
-├── s3-bucket/              # Terraform — S3 bucket
-├── ec2/                    # Terraform — EC2 instance
-├── vpc/                    # Terraform — VPC + networking
-├── security-group/         # Terraform — Security group
-├── iam-role/               # Terraform — IAM role
-├── terraform/              # Terraform — Full stack (modules)
+├── aws-core/                   # AWS Core demos
+│   ├── ec2-ansible/            #   Terraform + Ansible
+│   ├── ecs-fargate/            #   ECS Fargate + ALB + ECR
+│   └── vpc-rds/                #   VPC + private RDS
+├── s3-bucket/                  # Terraform — S3 bucket
+├── ec2/                        # Terraform — EC2 instance
+├── vpc/                        # Terraform — VPC + networking
+├── security-group/             # Terraform — Security group
+├── iam-role/                   # Terraform — IAM role
+├── terraform/                  # Terraform — Full stack (modules)
 │   └── modules/
 │       ├── vpc/
 │       ├── security_groups/
 │       ├── iam/
 │       ├── ec2/
 │       └── s3/
-├── ec2-ansible/            # Terraform + Ansible
-├── custom-flows/           # Custom flow examples (TFLint, approvals, scanning)
-├── cloudformation/         # CloudFormation
-├── terragrunt/             # Terragrunt config
-├── terragrunt-bootstrap/   # Terragrunt state backend
-├── multi-tier-workflow/    # env0 Workflow — full stack
-├── terragrunt-workflow/    # env0 Workflow — Terragrunt
-├── eks-workflow/           # env0 Workflow — EKS
-└── mcp/                    # Coming soon
+├── custom-flows/               # Custom flow examples
+├── cloudformation/             # CloudFormation
+├── terragrunt/                 # Terragrunt config
+├── terragrunt-bootstrap/       # Terragrunt state backend
+├── multi-tier-workflow/        # env0 Workflow — full stack
+├── terragrunt-workflow/        # env0 Workflow — Terragrunt
+├── eks-workflow/               # env0 Workflow — EKS
+└── mcp/                        # Coming soon
 ```
 
 ---
