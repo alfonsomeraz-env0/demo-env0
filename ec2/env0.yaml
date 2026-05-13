@@ -1,0 +1,18 @@
+version: 2
+
+deploy:
+  steps:
+    terraformApply:
+      after:
+        - name: Print instance info
+          run: |
+            echo "Instance ID:  $(terraform output -raw instance_id)"
+            echo "Public IP:    $(terraform output -raw public_ip)"
+            echo "Private IP:   $(terraform output -raw private_ip)"
+
+destroy:
+  steps:
+    terraformDestroy:
+      before:
+        - name: Confirm destroy
+          run: echo "Destroying EC2 instance in $ENV0_ENVIRONMENT_NAME..."

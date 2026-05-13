@@ -1,0 +1,24 @@
+version: 2
+
+deploy:
+  steps:
+    terraformApply:
+      after:
+        - name: Print stack outputs
+          run: |
+            echo "=============================="
+            echo "Full Stack Deployment Complete"
+            echo "=============================="
+            echo "VPC ID:           $(terraform output -raw vpc_id)"
+            echo "Instance ID:      $(terraform output -raw instance_id)"
+            echo "Instance Public:  $(terraform output -raw instance_public_ip)"
+            echo "S3 Bucket:        $(terraform output -raw s3_bucket_id)"
+
+destroy:
+  steps:
+    terraformDestroy:
+      before:
+        - name: Confirm full stack destroy
+          run: |
+            echo "Destroying full stack for: $ENV0_ENVIRONMENT_NAME"
+            echo "Modules will be destroyed in reverse dependency order"
