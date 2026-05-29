@@ -4,12 +4,10 @@ deploy:
     terraformApply:
       after:
         - name: "Seed sample data"
-          type: shell
-          command: |
+          run: |
             API_URL=$(terraform output -raw api_url)
             echo "Seeding sample items into $API_URL/items ..."
 
-            # Only seed if the table is empty
             COUNT=$(curl -sf "$API_URL/items" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['count'])" 2>/dev/null || echo "0")
 
             if [ "$COUNT" = "0" ]; then
@@ -31,8 +29,7 @@ deploy:
             fi
 
         - name: "Verify API"
-          type: shell
-          command: |
+          run: |
             API_URL=$(terraform output -raw api_url)
 
             echo ""
@@ -46,12 +43,12 @@ deploy:
             import sys, json
             data = json.load(sys.stdin)
             items = data['items']
-            print(f'  {'ID':<36}  {'Name':<30}  Status')
-            print(f'  {'-'*36}  {'-'*30}  ------')
+            print(f\"  {'ID':<36}  {'Name':<30}  Status\")
+            print(f\"  {'-'*36}  {'-'*30}  ------\")
             for item in items:
                 print(f\"  {item['id']:<36}  {item['name']:<30}  {item.get('status', '-')}\")
             print(f'')
-            print(f'  Total: {data[\"count\"]} item(s)')
+            print(f\"  Total: {data['count']} item(s)\")
             "
             echo ""
             echo "Try it:"
@@ -63,6 +60,5 @@ destroy:
     terraformDestroy:
       before:
         - name: "Confirm teardown"
-          type: shell
-          command: |
+          run: |
             echo "Tearing down serverless-api in environment: $ENVIRONMENT_NAME"
