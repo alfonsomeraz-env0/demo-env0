@@ -17,6 +17,12 @@ Each folder is a standalone demo — import it into env0 as a template and deplo
 | [`aws-core/ecs-fargate/`](./aws-core/ecs-fargate/README.md) | Serverless containers with ECS Fargate, ALB, and ECR |
 | [`aws-core/vpc-rds/`](./aws-core/vpc-rds/README.md) | Two-tier VPC with private RDS instance |
 
+### Serverless Application
+
+| Demo | Description |
+|---|---|
+| [`serverless-api/`](./serverless-api/README.md) | HTTP API (API Gateway + Lambda + DynamoDB) — realistic app, near-zero cost, great for PR bot demos |
+
 ### Terraform Modules
 
 | Demo | Description |
@@ -73,6 +79,7 @@ Each folder is a standalone demo — import it into env0 as a template and deplo
 ```
 Beginner      s3-bucket → vpc → ec2
 Intermediate  security-group → iam-role → terraform (full stack)
+Serverless    serverless-api (API Gateway + Lambda + DynamoDB)
 AWS Core      aws-core/ec2-ansible → aws-core/ecs-fargate → aws-core/vpc-rds
 Advanced      custom-flows → cloudformation
 Workflows     multi-tier-workflow → terragrunt-workflow → eks-workflow
@@ -84,7 +91,7 @@ Workflows     multi-tier-workflow → terragrunt-workflow → eks-workflow
 
 All demos target AWS. You'll need:
 - AWS credentials configured in env0 (IAM user or OIDC role)
-- Sufficient permissions for the resources each demo creates (EC2, ECS, RDS, S3, VPC, IAM, DynamoDB, CloudFormation)
+- Sufficient permissions for the resources each demo creates (EC2, ECS, RDS, S3, VPC, IAM, Lambda, API Gateway, DynamoDB, CloudFormation)
 
 ---
 
@@ -96,6 +103,7 @@ env0-demos/
 │   ├── ec2-ansible/            #   Terraform + Ansible
 │   ├── ecs-fargate/            #   ECS Fargate + ALB + ECR
 │   └── vpc-rds/                #   VPC + private RDS
+├── serverless-api/             # Serverless — API Gateway + Lambda + DynamoDB
 ├── s3-bucket/                  # Terraform — S3 bucket
 ├── ec2/                        # Terraform — EC2 instance
 ├── vpc/                        # Terraform — VPC + networking
